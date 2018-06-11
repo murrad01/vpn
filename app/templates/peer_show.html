@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+{% block content %}
+  <article class="media content-section">
+    <div class="media-body">
+      <div class="article-metadata">
+        <div>
+          <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('peer_index') }}">List</a>
+          <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('peer_edit', id=peer.id) }}">Edit</a>
+          <a class="btn btn-success btn-sm mt-1 mb-1" href="{{ url_for('peer_refresh', id=peer.id) }}">Refresh</a>
+          <button type="button" class="btn btn-warning btn-sm m-1" data-toggle="modal" data-target="#logoffModal">Logoff</button>
+          <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#deleteModal">Delete</button>
+        </div>
+      </div>
+      <hr>
+      <img class="img-fluid article-img" src="{{ url_for('static', filename='profile_pics/' + peer.image_file) }}">
+      <hr>
+      <p class="article-title"> 
+        &bull; Peer Name: {{ peer.name }} &bull; Peer IP: {{ peer.ip }} <br>
+        &bull; Local Peer: {{ peer.local_peer.name }} &bull; Last Update: {{ peer.date_active.strftime("%Y-%m-%d %H:%M") }}
+      </p>
+      <p class="article-content">{{ peer.connection }}
+    </div>
+  </article>
+  <!-- Modal -->
+  <div class="modal fade" id="logoffModal" tabindex="-1" role="dialog" aria-labelledby="logoffModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="logoffModalLabel">Logoff Peer {{ peer.ip }} ?</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <form action="{{ url_for('peer_logoff', id=peer.id) }}" method="POST">
+            <input class="btn btn-warning" type="submit" value="Logoff">
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel">Delete Peer {{ peer.ip }} ?</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <form action="{{ url_for('peer_delete', id=peer.id) }}" method="POST">
+            <input class="btn btn-danger" type="submit" value="Delete">
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
