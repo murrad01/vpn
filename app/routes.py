@@ -7,7 +7,8 @@ from netmiko import ConnectHandler
 from flask import render_template, url_for, flash, redirect, request
 from PIL import Image
 from app import app, db
-from app.forms import DeviceForm, EditDeviceForm, PeerForm, EditPeerForm, UserForm
+from app.forms import DeviceForm, EditDeviceForm, PeerForm, EditPeerForm, \
+                    UserForm, SearchPeerForm
 from app.models import Device, Peer
 
 
@@ -20,6 +21,24 @@ def home():
 @app.route("/about")
 def about():
     return render_template('about.html')
+
+
+@app.route("/peers/search", methods=['GET', 'POST'])
+def peer_search():
+    form = SearchPeerForm()
+    if form.validate_on_submit():
+        page = request.args.get('page', 1, type=int)
+        name_search = form.name.data
+        ip_search = form.ip.data
+        if name_search:
+            peers = Peer.query.filter(Peer.name.like("%" + name_search + "%"))\
+                .paginate(page=page, per_page=100)
+        if ip_search:
+            peers = Peer.query.filter(Peer.ip.like("%" + ip_search + "%"))\
+                .paginate(page=page, per_page=100)
+        return render_template('peer_index.html', peers=peers)
+    return render_template('peer_search.html', title='Search Peer',
+                           form=form, legend='Search Peer')
 
 
 @app.route("/peers/refresh")

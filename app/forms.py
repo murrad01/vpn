@@ -34,6 +34,12 @@ class EditPeerForm(FlaskForm):
                 raise ValidationError('That ip is already entered.  Please choose a different one.')
 
 
+class SearchPeerForm(FlaskForm):
+    name = StringField('Peer Name')
+    ip = StringField('IP Address')
+    submit = SubmitField('Search')
+
+
 class UserForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
