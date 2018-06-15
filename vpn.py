@@ -4,7 +4,7 @@ from app.models import Device, Peer
 
 @app.shell_context_processor
 def make_shell_context():
-	return {'db': db, 'Device': Device, 'Peer': Peer}
+    return {'db': db, 'Device': Device, 'Peer': Peer}
 
 if __name__ == '__main__':
     app.run(debug=True)
