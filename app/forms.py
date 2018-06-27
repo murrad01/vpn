@@ -2,8 +2,9 @@ from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, PasswordField, SubmitField, TextAreaField, HiddenField
 from wtforms.validators import DataRequired, IPAddress, ValidationError
-from app.models import Device, Peer
-# from app.models import Device
+from wtforms_alchemy.fields import QuerySelectField
+from app.models import Device, Peer, Devicetype, Location
+
 
 
 class PeerForm(FlaskForm):
@@ -46,11 +47,19 @@ class UserForm(FlaskForm):
     submit = SubmitField('Submit')
 
 
+def location_query():
+    return Location.query
+
+def devicetype_query():
+    return Devicetype.query
+
 class DeviceForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     ip = StringField('IP Address', validators=[DataRequired(), IPAddress()])
-    devicetype = StringField('Type')
-    loc = StringField('Location')
+    # devicetype = StringField('Type')
+    devicetype = QuerySelectField(query_factory=devicetype_query, allow_blank=True)
+    location = QuerySelectField(query_factory=location_query, allow_blank=True)
+    # location = StringField('Location')
     submit = SubmitField('Submit')
 
     def validate_ip(self, ip):
@@ -62,8 +71,10 @@ class DeviceForm(FlaskForm):
 class EditDeviceForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     ip = StringField('IP Address', validators=[DataRequired(), IPAddress()])
-    devicetype = StringField('Type')
-    loc = StringField('Location')
+    # devicetype = StringField('Type')
+    devicetype = QuerySelectField(query_factory=devicetype_query, allow_blank=True)
+    location = QuerySelectField(query_factory=location_query, allow_blank=True)
+    # location = StringField('Location')
     submit = SubmitField('Submit')
 
     def __init__(self, original_ip, *args, **kwargs):
@@ -75,3 +86,5 @@ class EditDeviceForm(FlaskForm):
             ip = Device.query.filter_by(ip=self.ip.data).first()
             if ip is not None:
                 raise ValidationError('That ip is already entered.  Please choose a different one.')
+
+

@@ -9,7 +9,7 @@ from PIL import Image
 from app import app, db
 from app.forms import DeviceForm, EditDeviceForm, PeerForm, EditPeerForm, \
                     UserForm, SearchPeerForm
-from app.models import Device, Peer
+from app.models import Device, Peer, Devicetype, Location
 
 
 @app.route("/")
@@ -33,27 +33,96 @@ def peer_search():
         if name_search:
             peers = Peer.query.filter(Peer.name.like("%" + name_search + "%"))\
                 .paginate(page=page, per_page=100)
+            flash('Searching for peer names matching "' + name_search + '"', 'success')
         if ip_search:
             peers = Peer.query.filter(Peer.ip.like("%" + ip_search + "%"))\
                 .paginate(page=page, per_page=100)
+            flash('Searching for peer IPs matching "' + ip_search + '"', 'success')
         return render_template('peer_index.html', peers=peers)
     return render_template('peer_search.html', title='Search Peer',
                            form=form, legend='Search Peer')
 
 
-@app.route("/peers/refresh")
-def peer_refresh():
-    pass
+@app.route("/peers/<int:id>/refresh", methods=['GET', 'POST'])
+def peer_refresh(id):
+    # from IPython import embed; embed()
+    peer = Peer.query.get_or_404(id)
+    form = UserForm()
+    if form.validate_on_submit():
+        # from IPython import embed; embed()
+        fwdevice = {
+            'device_type': 'cisco_asa',
+            'ip': peer.local_peer.ip,
+            'username': form.username.data,
+            'password': form.password.data,
+            'port' : 22, # optional, defaults to 22
+            'secret': form.password.data, # optional, defaults to ''
+            'verbose': False, # optional, defaults to True
+            }
+        net_connect = ConnectHandler(**fwdevice)
+        send_cmd = 'sho vpn-sessiondb detail l2l filter ipaddress ' + peer.ip
+        raw_connection = net_connect.send_command(send_cmd)
+        # from IPython import embed; embed()
+        if raw_connection[0:4] != 'INFO':
+            peer.active = True
+            peer.date_active = datetime.today()
+            duration_start = raw_connection.find('Duration')
+            pattern = re.compile(r'IKE.*Tunnels')
+            ike = re.search(pattern, raw_connection)
+            if ike:
+                duration_end = ike.start()
+                duration = raw_connection[duration_start:duration_end]
+                peer.duration = duration
+
+                bytes_start = raw_connection.find('Bytes')
+                bytes_end = raw_connection.find('Login Time')
+                bytes_tr = raw_connection[bytes_start:bytes_end]
+                peer.bytes_tr = bytes_tr
+
+            print('Refreshing peer: ' + peer.ip)
+            flash('Peer ' + peer.ip + ' has been refreshed!', 'success')
+            peer.connection = raw_connection
+            db.session.commit()
+        else:
+            peer.active = False
+            db.session.commit()
+            print(peer.ip + ' tunnel is not active')
+            flash('Peer ' + peer.ip + ' tunnel is not active!', 'success')
+        return render_template('peer_show.html', peer=peer)
+    return render_template('update_peer.html', form=form)
 
 
-@app.route("/peers/logoff")
-def peer_logoff():
-    pass
+@app.route("/peers/<int:id>/logoff", methods=['GET', 'POST'])
+def peer_logoff(id):
+    # from IPython import embed; embed()
+    peer = Peer.query.get_or_404(id)
+    form = UserForm()
+    if form.validate_on_submit():
+        # from IPython import embed; embed()
+        fwdevice = {
+            'device_type': 'cisco_asa',
+            'ip': peer.local_peer.ip,
+            'username': form.username.data,
+            'password': form.password.data,
+            'port' : 22, # optional, defaults to 22
+            'secret': form.password.data, # optional, defaults to ''
+            'verbose': False, # optional, defaults to True
+            }
+        net_connect = ConnectHandler(**fwdevice)
+        # vpn-sessiondb logoff ipaddress 23.127.137.185 noconfirm  
+        send_cmd = 'vpn-sessiondb logoff ipaddress ' + peer.ip + ' noconfirm'
+        raw_connection = net_connect.send_command(send_cmd)
+        print(raw_connection)
+        # from IPython import embed; embed()
+        return render_template('peer_show.html', peer=peer)
+    return render_template('update_peer.html', form=form)
 
 
 @app.route("/peers/update", methods=['GET', 'POST'])
 def peers_update():
-    fwss = Device.query.filter_by(devicetype='FWSS').all()
+    # fwss = Device.query.filter_by(devicetype='FWSS').all()
+    fwss = Devicetype.query.filter_by(name='FWSS').first()
+    devices = Device.query.filter_by(devicetype=fwss).all()
     form = UserForm()
     if form.validate_on_submit():
         # Create a dictionary representing the device.
@@ -70,7 +139,7 @@ def peers_update():
         for peer in peers:
             peer.active = False
         db.session.commit()
-        for device in fwss:
+        for device in devices:
             print(device.name +' - ' + device.ip)
 
             fwdevice["ip"] = device.ip
@@ -148,6 +217,14 @@ def peer_index_active():
     peers = Peer.query.filter_by(active=True)\
         .paginate(page=page, per_page=4)
     return render_template('peer_index_active.html', peers=peers)
+
+
+@app.route("/peers/idle")
+def peer_index_idle():
+    page = request.args.get('page', 1, type=int)
+    peers = Peer.query.filter_by(active=False)\
+        .paginate(page=page, per_page=4)
+    return render_template('peer_index_idle.html', peers=peers)
 
 
 def save_picture(form_picture):
@@ -229,7 +306,8 @@ def device_add():
     form = DeviceForm()
     if form.validate_on_submit():
         device = Device(ip=form.ip.data, name=form.name.data,
-                        devicetype=form.devicetype.data, loc=form.loc.data)
+                        devicetype=form.devicetype.data,
+                        location=form.location.data)
         db.session.add(device)
         db.session.commit()
         flash('Your device has been created!', 'success')
@@ -252,7 +330,7 @@ def device_edit(id):
         device.name = form.name.data
         device.ip = form.ip.data
         device.devicetype = form.devicetype.data
-        device.loc = form.loc.data
+        device.location = form.location.data
         db.session.commit()
         flash('Your changes have been saved', 'success')
         return redirect(url_for('device_show', id=device.id))
@@ -260,7 +338,7 @@ def device_edit(id):
         form.name.data = device.name
         form.ip.data = device.ip
         form.devicetype.data = device.devicetype
-        form.loc.data = device.loc
+        form.location.data = device.location
     return render_template('device_new.html', title='Edit Device',
                             form=form, legend='Edit Device')
 

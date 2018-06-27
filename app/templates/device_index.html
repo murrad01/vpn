@@ -16,7 +16,7 @@
           <td>{{ device.name }}</td> 
           <td><a href="{{ url_for('device_show', id=device.id) }}">{{ device.ip }}</a></td>
           <td>{{ device.devicetype }}</td>
-          <td>{{ device.loc }}</td>
+          <td>{{ device.location }}</td>
         </tr>
       {% endfor %}
     </tbody>

@@ -51,16 +51,16 @@
         </div>
 
         <div class="form-group">
-          {{ form.loc.label(class="form-control-label") }}
-          {% if form.loc.errors %}
-            {{ form.loc(class="form-control form-control-lg is-invalid") }}
+          {{ form.location.label(class="form-control-label") }}
+          {% if form.location.errors %}
+            {{ form.location(class="form-control form-control-lg is-invalid") }}
             <div class="invalid-feedback">
-              {% for error in form.loc.errors %}
+              {% for error in form.location.errors %}
                 <span>{{ error }}</span>
               {% endfor %}
             </div>
           {% else %}
-            {{ form.loc(class="form-control form-control-lg") }}
+            {{ form.location(class="form-control form-control-lg") }}
           {% endif %}
         </div>
 
