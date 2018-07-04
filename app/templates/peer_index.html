@@ -1,6 +1,15 @@
 {% extends "layout.html" %}
 {% block content %}
-  <h4>Peers ({{ peers.total }})</h4>
+<div>
+
+  <a class="btn btn-info btn-sm mt-1 mb-1" href="{{ url_for('peer_update') }}">Update</a>
+  <a class="btn btn-info btn-sm mt-1 mb-1" href="{{ url_for('peer_index') }}">List</a>
+  <a class="btn btn-info btn-sm mt-1 mb-1" href="{{ url_for('peer_index_active') }}">Active</a>
+  <a class="btn btn-info btn-sm mt-1 mb-1" href="{{ url_for('peer_index_idle') }}">Idle</a>
+  <a class="btn btn-info btn-sm mt-1 mb-1" href="{{ url_for('peer_search') }}">Search</a>
+  <a class="btn btn-info btn-sm mt-1 mb-1" href="{{ url_for('peer_add') }}">Create</a>
+  <h5> ({{ title }} {{ peers.total }}) </h5>
+</div>
   <div class="container-fluid">
 
     <table class="table table-hover">

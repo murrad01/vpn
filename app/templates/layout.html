@@ -18,71 +18,27 @@
 </head>
 <body>
     <header class="site-header">
-
       <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
-        <a class="navbar-brand mr-4" href="/">VPN Dashboard</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-              <!-- <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a> -->
-              <a class="nav-item nav-link" href="{{ url_for('home') }}">Home</a>
-            </li>
-            <li class="nav-item">
-              <!-- <a class="nav-link" href="#">Link</a> -->
-              <a class="nav-item nav-link" href="{{ url_for('about') }}">About</a>
-            </li>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Devices
-              </a>
-              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <a class="dropdown-item" href="{{ url_for('device_index') }}">List</a>
-                <a class="dropdown-item" href="{{ url_for('device_add') }}">Add</a>
-                <!-- <div class="dropdown-divider"></div> -->
-                <!-- <a class="dropdown-item" href="#">Something else here</a> -->
-              </div>
-            </li>
-            
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Peers
-              </a>
-              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <a class="dropdown-item" href="{{ url_for('peer_search') }}">Search</a>
-                <a class="dropdown-item" href="{{ url_for('peer_index') }}">List</a>
-                <a class="dropdown-item" href="{{ url_for('peer_add') }}">Add</a>
-                <!-- <div class="dropdown-divider"></div> -->
-                <!-- <a class="dropdown-item" href="#">Something else here</a> -->
-              </div>
-            </li>
-
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Tunnels
-              </a>
-              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <a class="dropdown-item" href="{{ url_for('peer_index_active') }}">List Active</a>
-                <a class="dropdown-item" href="{{ url_for('peer_index_idle') }}">List Idle</a>
-                <a class="dropdown-item" href="{{ url_for('peers_update') }}">Refresh</a>
-                <!-- <div class="dropdown-divider"></div> -->
-                <!-- <a class="dropdown-item" href="#">Something else here</a> -->
-              </div>
-            </li>
-
-           <!--  <li class="nav-item">
-              <a class="nav-link disabled" href="#">Disabled</a>
-            </li> -->
-          </ul><!-- 
-          <form class="form-inline my-2 my-lg-0">
-            <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-          </form> -->
+        <div class="container">
+          <a class="navbar-brand mr-4" href="/">VPN Dashboard</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarToggle">
+            <div class="navbar-nav mr-auto">             
+            <!-- Navbar Right Side -->
+            <div class="navbar-nav">
+              {% if current_user.is_authenticated %}
+                <a class="nav-item nav-link" href="{{ url_for('peer_index') }}">Peers</a>
+                <a class="nav-item nav-link" href="{{ url_for('logout') }}">Logout</a>
+              {% else %}
+                <a class="nav-item nav-link" href="{{ url_for('login') }}">Login</a>
+              {% endif %}
+            </div>
+          </div>
         </div>
+      
       </nav>
-
 
     </header>
     <main role="main" class="container">
@@ -101,7 +57,6 @@
         </div>  
       </div>
     </main>
-
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
